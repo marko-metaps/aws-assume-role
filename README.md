@@ -1,5 +1,9 @@
 # aws-assume-role
 
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+
+Create temporary credentials in your MFA-enabled IAM account.
+
 ## Installation
 
 If you are using a Mac, you can use brew.
@@ -15,7 +19,7 @@ If the Go command is available.
 $ go install github.com/naomichi-y/aws-assume-role@latest
 ```
 
-## Configuration
+## Usage
 
 Define MFA enabled accounts in the profile.
 
