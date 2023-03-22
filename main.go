@@ -101,7 +101,7 @@ func main() {
 	credentials := getCredentials(profile, mfaSerial, tokenCode)
 
 	fmt.Printf("Access key ID: %v\n", credentials.AccessKeyID)
-	var newProfile = profile + "-assume"
+	newProfile := profile + "-assume"
 
 	configureSet(newProfile, "aws_access_key_id", credentials.AccessKeyID)
 	configureSet(newProfile, "aws_secret_access_key", credentials.SecretAccessKey)
