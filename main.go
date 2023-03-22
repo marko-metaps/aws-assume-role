@@ -3,7 +3,7 @@ package main
 import (
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/service/sts"
-    "github.com/aws/aws-sdk-go/aws/session"
+	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/aws/credentials"
 	"os"
 	"os/exec"
@@ -11,7 +11,7 @@ import (
 	"strings"
 )
 
-func main() {
+func checkCredentialFile() {
 	homeDir, _ := os.UserHomeDir()
 
 	credentialsPath := homeDir + "/.aws/credentials"
@@ -21,57 +21,91 @@ func main() {
 		fmt.Printf("%v File does not exist\n", credentialsPath)
 		os.Exit(1)
 	}
+}
 
-	aws_profile := os.Getenv("AWS_PROFILE")
+func getProfile() string {
+	profile := os.Getenv("AWS_PROFILE")
 
-	if aws_profile == "" {
+	if profile == "" {
 		fmt.Print("AWS profile [default]: ")
-		fmt.Scanln(&aws_profile)
+		fmt.Scanln(&profile)
 
-		if aws_profile == "" {
-			aws_profile = "default"
+		if profile == "" {
+			profile = "default"
 		}
 	}
 
-	mfa_serial, _ := exec.Command("aws", "--profile", aws_profile, "configure", "get", "mfa_serial").Output()
+	return profile
+}
 
-	if len(mfa_serial) == 0 {
-		fmt.Printf("`mfa_serial` is undefined in profile. [%v]\n", aws_profile)
-		os.Exit(1)
-	}
-
-	var token_code string
+func getTokenCode() string {
+	var tokenCode string
 
 	fmt.Print("Token code: ")
-	fmt.Scanln(&token_code)
+	fmt.Scanln(&tokenCode)
 
+	return tokenCode
+}
+
+func getCredentials(profile string, mfaSerial string, tokenCode string) credentials.Value {
 	sess := session.Must(session.NewSession(&aws.Config{
-		Credentials: credentials.NewSharedCredentials("", aws_profile),
+		Credentials: credentials.NewSharedCredentials("", profile),
 	}))
 	input := &sts.GetSessionTokenInput{
 		DurationSeconds: aws.Int64(3600),
-		SerialNumber:    aws.String(strings.ReplaceAll(string(mfa_serial), "\n", "")),
-		TokenCode:       aws.String(token_code),
+		SerialNumber:    aws.String(mfaSerial),
+		TokenCode:       aws.String(tokenCode),
 	}
 	svc := sts.New(sess)
-	result, err := svc.GetSessionToken(input)
+	token, err := svc.GetSessionToken(input)
 
 	if (err != nil) {
 		fmt.Print(err)
 		os.Exit(1)
 	}
 
-	fmt.Printf("Access key ID: %v\n", aws.StringValue(result.Credentials.AccessKeyId))
-	var assume_new_profile = aws_profile + "-assume"
+	value := credentials.Value{
+		AccessKeyID:     aws.StringValue(token.Credentials.AccessKeyId),
+		SecretAccessKey: aws.StringValue(token.Credentials.SecretAccessKey),
+		SessionToken:    aws.StringValue(token.Credentials.SessionToken),
+	}
+	return value
+}
 
-	_, err = exec.Command("aws", "--profile", assume_new_profile, "configure", "set", "aws_access_key_id", aws.StringValue(result.Credentials.AccessKeyId)).CombinedOutput()
-	_, err = exec.Command("aws", "--profile", assume_new_profile, "configure", "set", "aws_secret_access_key", aws.StringValue(result.Credentials.SecretAccessKey)).CombinedOutput()
-	_, err = exec.Command("aws", "--profile", assume_new_profile, "configure", "set", "aws_session_token", aws.StringValue(result.Credentials.SessionToken)).CombinedOutput()
+func configureGet(profile string, key string) string {
+	result, _ := exec.Command("aws", "--profile", profile, "configure", "get", key).Output()
+
+	if len(result) == 0 {
+		fmt.Printf("%v is undefined in profile. [%v]\n", key, profile)
+		os.Exit(1)
+	}
+
+	return strings.ReplaceAll(string(result), "\n", "")
+}
+
+func configureSet(profile string, key string, value string) {
+	_, err := exec.Command("aws", "--profile", profile, "configure", "set", key, aws.StringValue(&value)).CombinedOutput()
 
 	if (err != nil) {
 		fmt.Print(err)
 		os.Exit(1)
 	}
+}
 
-	fmt.Printf("Successfully updated %v profile. [~/.aws/credentials]\n", assume_new_profile)
+func main() {
+	checkCredentialFile()
+	profile := getProfile()
+
+	mfaSerial := configureGet(profile, "mfa_serial")
+	tokenCode := getTokenCode()
+	credentials := getCredentials(profile, mfaSerial, tokenCode)
+
+	fmt.Printf("Access key ID: %v\n", credentials.AccessKeyID)
+	var newProfile = profile + "-assume"
+
+	configureSet(newProfile, "aws_access_key_id", credentials.AccessKeyID)
+	configureSet(newProfile, "aws_secret_access_key", credentials.SecretAccessKey)
+	configureSet(newProfile, "aws_session_token", credentials.SessionToken)
+
+	fmt.Printf("Successfully updated %v profile. [~/.aws/credentials]\n", newProfile)
 }
