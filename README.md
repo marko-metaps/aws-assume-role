@@ -2,6 +2,7 @@
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
+Create temporary credentials in your MFA-enabled IAM account.
 
 ## Installation
 
