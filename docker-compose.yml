@@ -1,0 +1,7 @@
+version: '3'
+services:
+  go:
+    build: .
+    volumes:
+      - .:/go
+    platform: linux/amd64
