@@ -33,7 +33,7 @@ Temporary credentials can be created by running the aws-assume-role command and 
 $ aws-assume-role
 AWS profile [default]: test
 Token code: ***
-Access key ID: &&&
+Access key ID: ***
 Successfully updated test-assume profile. [~/.aws/credentials]
 ```
 
@@ -46,4 +46,14 @@ $ cat ~/.aws/credentials
 aws_access_key_id = ***
 aws_secret_access_key = ***
 aws_session_token = ***
+```
+
+You can execute AWS commands via Assume role.
+```zsh
+$ aws --profile test-assume sts get-caller-identity
+{
+    "UserId": "***,
+    "Account": "***",
+    "Arn": "***"
+}
 ```
