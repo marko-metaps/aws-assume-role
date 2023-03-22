@@ -18,7 +18,7 @@ If the Go command is available.
 $ go install github.com/naomichi-y/aws-assume-role@latest
 ```
 
-## Configuration
+## Usage
 
 Define MFA enabled accounts in the profile.
 
