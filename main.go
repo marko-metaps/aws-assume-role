@@ -13,7 +13,7 @@ import (
 	"strconv"
 )
 
-const version = "1.0.1"
+const version = "1.0.2"
 
 func checkCredentialFile() {
 	dir, _ := os.UserHomeDir()
