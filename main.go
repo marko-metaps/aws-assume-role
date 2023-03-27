@@ -125,7 +125,7 @@ func main() {
     var v bool
 
 	flag.BoolVar(&v, "version", false, "Show version")
-    flag.Parse()
+	flag.Parse()
 
 	if v {
 		fmt.Println(version)
