@@ -16,39 +16,41 @@ import (
 const version = "1.0.1"
 
 func checkCredentialFile() {
-	h, _ := os.UserHomeDir()
-
-	credentialsPath := h + "/.aws/credentials"
-	_, err := os.Stat(credentialsPath)
+	dir, _ := os.UserHomeDir()
+	path := dir + "/.aws/credentials"
+	stat, err := os.Stat(path)
 
 	if os.IsNotExist(err) {
-		fmt.Printf("%v File does not exist\n", credentialsPath)
-		os.Exit(1)
+		panic(err)
+	}
+
+	if stat.Mode().Perm() & 0200 != 0200 {
+		panic(fmt.Errorf("No write permission. [~/.aws/credentials]"))
 	}
 }
 
 func getProfile() string {
-	p := os.Getenv("AWS_PROFILE")
+	profile := os.Getenv("AWS_PROFILE")
 
-	if p == "" {
+	if profile == "" {
 		fmt.Print("AWS profile [default]: ")
-		fmt.Scanln(&p)
+		fmt.Scanln(&profile)
 
-		if p == "" {
-			p = "default"
+		if profile == "" {
+			profile = "default"
 		}
 	}
 
-	return p
+	return profile
 }
 
 func getTokenCode() string {
-	var t string
+	var code string
 
 	fmt.Print("Token code: ")
-	fmt.Scanln(&t)
+	fmt.Scanln(&code)
 
-	return t
+	return code
 }
 
 func getCredentials(p string, t string) credentials.Value {
@@ -59,8 +61,7 @@ func getCredentials(p string, t string) credentials.Value {
 	sec, err := strconv.ParseInt(configureGetAlt(p, "duration_seconds", "3600"), 10, 64)
 
 	if err != nil {
-		fmt.Print(err)
-		os.Exit(1)
+		panic(err)
 	}
 
 	input := &sts.GetSessionTokenInput{
@@ -72,38 +73,30 @@ func getCredentials(p string, t string) credentials.Value {
 	token, err := svc.GetSessionToken(input)
 
 	if err != nil {
-		fmt.Print(err)
-		os.Exit(1)
+		panic(err)
 	}
 
-	v := credentials.Value{
+	result := credentials.Value{
 		AccessKeyID:     aws.StringValue(token.Credentials.AccessKeyId),
 		SecretAccessKey: aws.StringValue(token.Credentials.SecretAccessKey),
 		SessionToken:    aws.StringValue(token.Credentials.SessionToken),
 	}
 
-	return v
+	return result
 }
 
-func configureGetRawData(p string, k string) string {
-	result, _ := exec.Command("aws", "--profile", p, "configure", "get", k).Output()
+func configureGet(p string, k string) string {
+	result, err := exec.Command("aws", "--profile", p, "configure", "get", k).Output()
+
+	if err != nil {
+		panic(fmt.Errorf("%v is undefined in profile. [%v]\n", k, p))
+	}
 
 	return strings.ReplaceAll(string(result), "\n", "")
 }
 
-func configureGet(p string, k string) string {
-	result := configureGetRawData(p, k)
-
-	if len(result) == 0 {
-		fmt.Printf("%v is undefined in profile. [%v]\n", k, p)
-		os.Exit(1)
-	}
-
-	return result
-}
-
 func configureGetAlt(p string, k string, v string) string {
-	result := configureGetRawData(p, k)
+	result := configureGet(p, k)
 
 	if len(result) == 0 {
 		return v
@@ -116,8 +109,7 @@ func configureSet(p string, k string, v string) {
 	_, err := exec.Command("aws", "--profile", p, "configure", "set", k, aws.StringValue(&v)).CombinedOutput()
 
 	if err != nil {
-		fmt.Print(err)
-		os.Exit(1)
+		panic(err)
 	}
 }
 
@@ -133,17 +125,17 @@ func main() {
 	}
 
 	checkCredentialFile()
-	p := getProfile()
+	profile := getProfile()
 
-	t := getTokenCode()
-	credentials := getCredentials(p, t)
+	code := getTokenCode()
+	credentials := getCredentials(profile, code)
 
 	fmt.Printf("Access key ID: %v\n", credentials.AccessKeyID)
-	k := p + "-assume"
+	assume := profile + "-assume"
 
-	configureSet(k, "aws_access_key_id", credentials.AccessKeyID)
-	configureSet(k, "aws_secret_access_key", credentials.SecretAccessKey)
-	configureSet(k, "aws_session_token", credentials.SessionToken)
+	configureSet(assume, "aws_access_key_id", credentials.AccessKeyID)
+	configureSet(assume, "aws_secret_access_key", credentials.SecretAccessKey)
+	configureSet(assume, "aws_session_token", credentials.SessionToken)
 
-	fmt.Printf("Successfully updated %v profile. [~/.aws/credentials]\n", k)
+	fmt.Printf("Successfully updated %v profile. [~/.aws/credentials]\n", assume)
 }
