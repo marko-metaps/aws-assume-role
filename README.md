@@ -29,6 +29,7 @@ Define MFA enabled accounts in the profile.
 aws_access_key_id = ***
 aws_secret_access_key= ***
 mfa_serial=(arn-of-the-mfa-device)
+duration_seconds=3600
 ```
 
 Temporary credentials can be created by running the aws-assume-role command and specifying an MFA profile and token.
