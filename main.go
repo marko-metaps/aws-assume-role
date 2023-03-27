@@ -102,11 +102,11 @@ func configureGet(p string, k string) string {
 	return result
 }
 
-func configureGetAlt(p string, k string, alt string) string {
+func configureGetAlt(p string, k string, v string) string {
 	result := configureGetRawData(p, k)
 
 	if len(result) == 0 {
-		return alt
+		return v
 	}
 
 	return result
