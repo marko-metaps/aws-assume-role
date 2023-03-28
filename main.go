@@ -13,7 +13,7 @@ import (
 	"strconv"
 )
 
-const version = "1.0.2"
+const version = "1.0.3"
 
 func checkCredentialFile() {
 	dir, _ := os.UserHomeDir()
@@ -85,18 +85,24 @@ func getCredentials(p string, t string) credentials.Value {
 	return result
 }
 
-func configureGet(p string, k string) string {
-	result, err := exec.Command("aws", "--profile", p, "configure", "get", k).Output()
-
-	if err != nil {
-		panic(fmt.Errorf("%v is undefined in profile. [%v]\n", k, p))
-	}
+func configureGetRaw(p string, k string) string {
+	result, _ := exec.Command("aws", "--profile", p, "configure", "get", k).Output()
 
 	return strings.ReplaceAll(string(result), "\n", "")
 }
 
+func configureGet(p string, k string) string {
+	result := configureGetRaw(p, k)
+
+	if len(result) == 0 {
+		panic(fmt.Errorf("%v is undefined in profile. [%v]\n", k, p))
+	}
+
+	return result
+}
+
 func configureGetAlt(p string, k string, v string) string {
-	result := configureGet(p, k)
+	result := configureGetRaw(p, k)
 
 	if len(result) == 0 {
 		return v
