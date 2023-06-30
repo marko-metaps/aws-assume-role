@@ -53,6 +53,15 @@ aws_secret_access_key = ***
 aws_session_token = ***
 ```
 
+You need to add region settings in config.
+```zsh
+$ cat ~/.aws/config
+
+[test-assume]
+region=(region)
+output=json
+```
+
 You can execute AWS commands via Assume role.
 ```zsh
 $ aws --profile test-assume sts get-caller-identity
