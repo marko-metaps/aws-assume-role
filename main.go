@@ -1,33 +1,20 @@
 package main
 
 import (
-	"github.com/aws/aws-sdk-go/aws"
-	"github.com/aws/aws-sdk-go/service/sts"
-	"github.com/aws/aws-sdk-go/aws/session"
-	"github.com/aws/aws-sdk-go/aws/credentials"
+	"flag"
+	"fmt"
 	"os"
 	"os/exec"
-	"fmt"
-	"flag"
-	"strings"
 	"strconv"
+	"strings"
+
+	"github.com/aws/aws-sdk-go/aws"
+	"github.com/aws/aws-sdk-go/aws/credentials"
+	"github.com/aws/aws-sdk-go/aws/session"
+	"github.com/aws/aws-sdk-go/service/sts"
 )
 
 const version = "1.0.3"
-
-func checkCredentialFile() {
-	dir, _ := os.UserHomeDir()
-	path := dir + "/.aws/credentials"
-	stat, err := os.Stat(path)
-
-	if os.IsNotExist(err) {
-		panic(err)
-	}
-
-	if stat.Mode().Perm() & 0200 != 0200 {
-		panic(fmt.Errorf("No write permission. [~/.aws/credentials]"))
-	}
-}
 
 func getProfile() string {
 	profile := os.Getenv("AWS_PROFILE")
@@ -130,7 +117,7 @@ func main() {
 		return
 	}
 
-	checkCredentialFile()
+	checkCredentialFile(RealFileSystem{})
 	profile := getProfile()
 
 	code := getTokenCode()
