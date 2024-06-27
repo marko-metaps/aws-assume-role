@@ -6,6 +6,7 @@ import (
 	"os"
 
 	"github.com/aws/aws-sdk-go/aws"
+	"github.com/aws/aws-sdk-go/aws/credentials"
 	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/service/sts"
 )
@@ -25,8 +26,10 @@ func main() {
 
 	checkCredentialFile(RealFileSystem{})
 
+	profile := getProfile(os.Stdin)
+
 	sess, err := session.NewSession(&aws.Config{
-		Region: aws.String("ap-northeast-1"),
+		Credentials: credentials.NewSharedCredentials("", profile),
 	})
 	if err != nil {
 		fmt.Fprintf(os.Stderr, "Failed to create session: %s\n", err)
@@ -34,8 +37,6 @@ func main() {
 	}
 
 	stsService := sts.New(sess)
-
-	profile := getProfile(os.Stdin)
 
 	tokenCode := getTokenCode(os.Stdin)
 
