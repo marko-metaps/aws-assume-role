@@ -1,4 +1,4 @@
-package main
+package filesystem
 
 import (
 	"fmt"
@@ -24,7 +24,7 @@ func (RealFileSystem) Stat(path string) (os.FileInfo, error) {
 	return os.Stat(path)
 }
 
-func checkCredentialFile(fs FileSystem) error {
+func CheckCredentialFile(fs FileSystem) error {
 	dir, err := fs.UserHomeDir()
 	if err != nil {
 		return err

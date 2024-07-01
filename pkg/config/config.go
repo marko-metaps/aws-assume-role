@@ -1,4 +1,4 @@
-package main
+package config
 
 import (
 	"fmt"
@@ -21,7 +21,7 @@ func configureGetRaw(runner CmdRunner, profile string, key string) string {
 	return strings.TrimSpace(string(result))
 }
 
-func configureGet(runner CmdRunner, profile string, key string) string {
+func ConfigureGet(runner CmdRunner, profile string, key string) string {
 	result := configureGetRaw(runner, profile, key)
 	if len(result) == 0 {
 		panic(fmt.Errorf("%v is undefined in profile [%v]", key, profile))
@@ -29,7 +29,7 @@ func configureGet(runner CmdRunner, profile string, key string) string {
 	return result
 }
 
-func configureGetAlt(runner CmdRunner, profile string, key string, defaultValue string) string {
+func ConfigureGetAlt(runner CmdRunner, profile string, key string, defaultValue string) string {
 	result := configureGetRaw(runner, profile, key)
 	if len(result) == 0 {
 		return defaultValue
@@ -37,7 +37,7 @@ func configureGetAlt(runner CmdRunner, profile string, key string, defaultValue 
 	return result
 }
 
-func configureSet(runner CmdRunner, profile, key, value string) error {
+func ConfigureSet(runner CmdRunner, profile, key, value string) error {
 	_, err := runner.RunCommand("aws", "--profile", profile, "configure", "set", key, value)
 	if err != nil {
 		return fmt.Errorf("failed to execute 'aws --profile %s configure set %s %s': %v", profile, key, value, err)

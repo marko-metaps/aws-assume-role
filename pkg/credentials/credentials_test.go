@@ -1,4 +1,4 @@
-package main
+package creds
 
 import (
 	"testing"
@@ -28,7 +28,7 @@ func TestGetCredentials(t *testing.T) {
 		MockError: nil,
 	}
 
-	creds, err := getCredentials(mockSTS, mockRunner, "default", "123456")
+	creds, err := GetCredentials(mockSTS, mockRunner, "default", "123456")
 	if err != nil {
 		t.Fatalf("Expected no error, got %v", err)
 	}

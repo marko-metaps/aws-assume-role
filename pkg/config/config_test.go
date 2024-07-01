@@ -1,4 +1,4 @@
-package main
+package config
 
 import (
 	"testing"
@@ -15,7 +15,7 @@ func TestConfigureGet(t *testing.T) {
 	}
 
 	key := "aws_access_key_id"
-	got := configureGet(mockRunner, "default", key)
+	got := ConfigureGet(mockRunner, "default", key)
 	want := "AKIA1234567890"
 	if got != want {
 		t.Errorf("configureGet() = %v, want %v", got, want)
@@ -27,5 +27,5 @@ func TestConfigureGet(t *testing.T) {
 			t.Errorf("Expected panic for undefined key, did not panic")
 		}
 	}()
-	configureGet(mockRunner, "default", "undefined_key")
+	ConfigureGet(mockRunner, "default", "undefined_key")
 }

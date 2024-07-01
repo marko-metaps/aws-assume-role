@@ -1,4 +1,4 @@
-package main
+package utils
 
 import (
 	"bufio"
@@ -6,7 +6,7 @@ import (
 	"io"
 )
 
-func getProfile(in io.Reader) string {
+func GetProfile(in io.Reader) string {
 	scanner := bufio.NewScanner(in)
 	fmt.Print("AWS profile [default]: ")
 	scanner.Scan()
@@ -19,7 +19,7 @@ func getProfile(in io.Reader) string {
 	return profile
 }
 
-func getTokenCode(in io.Reader) string {
+func GetTokenCode(in io.Reader) string {
 	scanner := bufio.NewScanner(in)
 	fmt.Print("Token code: ")
 	scanner.Scan()

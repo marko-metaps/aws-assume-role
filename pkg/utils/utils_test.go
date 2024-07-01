@@ -1,4 +1,4 @@
-package main
+package utils
 
 import (
 	"bytes"
@@ -18,7 +18,7 @@ func TestGetProfile(t *testing.T) {
 	for _, test := range tests {
 		t.Run(test.name, func(t *testing.T) {
 			input := bytes.NewBufferString(test.input)
-			result := getProfile(input)
+			result := GetProfile(input)
 			if result != test.expected {
 				t.Errorf("expected '%s', got '%s'", test.expected, result)
 			}
@@ -29,7 +29,7 @@ func TestGetProfile(t *testing.T) {
 func TestGetTokenCode(t *testing.T) {
 	token := "123456"
 	input := bytes.NewBufferString(token + "\n")
-	result := getTokenCode(input)
+	result := GetTokenCode(input)
 	if result != token {
 		t.Errorf("expected '%s', got '%s'", token, result)
 	}

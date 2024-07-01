@@ -1,4 +1,4 @@
-package main
+package filesystem
 
 import (
 	"os"
@@ -69,7 +69,7 @@ func TestCheckCredentialFile(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			err := checkCredentialFile(tt.fs)
+			err := CheckCredentialFile(tt.fs)
 			if (err != nil) != tt.expectError {
 				t.Errorf("checkCredentialFile() error = %v, expectError %v", err, tt.expectError)
 			}
