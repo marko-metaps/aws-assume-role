@@ -19,9 +19,18 @@ func GetProfile(in io.Reader) string {
 	return profile
 }
 
-func GetTokenCode(in io.Reader) string {
-	scanner := bufio.NewScanner(in)
+func GetTokenCode(in io.Reader) (string, error) {
 	fmt.Print("Token code: ")
-	scanner.Scan()
-	return scanner.Text()
+	scanner := bufio.NewScanner(in)
+	if scanner.Scan() {
+		code := scanner.Text()
+		if code == "" {
+			return "", fmt.Errorf("no token code provided")
+		}
+		return code, nil
+	}
+	if err := scanner.Err(); err != nil {
+		return "", fmt.Errorf("error reading token code: %w", err)
+	}
+	return "", fmt.Errorf("no token code provided")
 }

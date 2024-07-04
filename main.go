@@ -43,7 +43,12 @@ func main() {
 
 	stsService := sts.New(sess)
 
-	tokenCode := utils.GetTokenCode(os.Stdin)
+	tokenCode, err := utils.GetTokenCode(os.Stdin)
+
+	if err != nil {
+		fmt.Fprintf(os.Stderr, "Error getting tokenCode: %s\n", err)
+		os.Exit(1)
+	}
 
 	cmdRunner := config.RealCmdRunner{}
 	credentials, err := creds.GetCredentials(stsService, cmdRunner, profile, tokenCode)

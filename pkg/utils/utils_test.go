@@ -2,6 +2,7 @@ package utils
 
 import (
 	"bytes"
+	"strings"
 	"testing"
 )
 
@@ -27,10 +28,19 @@ func TestGetProfile(t *testing.T) {
 }
 
 func TestGetTokenCode(t *testing.T) {
-	token := "123456"
-	input := bytes.NewBufferString(token + "\n")
-	result := GetTokenCode(input)
-	if result != token {
-		t.Errorf("expected '%s', got '%s'", token, result)
+	validInput := strings.NewReader("123456\n")
+	code, err := GetTokenCode(validInput)
+	if err != nil {
+		t.Fatalf("Expected no error, got %v", err)
+	}
+	if code != "123456" {
+		t.Errorf("Expected '123456', got '%s'", code)
+	}
+
+	// 空の入力
+	emptyInput := strings.NewReader("\n")
+	_, err = GetTokenCode(emptyInput)
+	if err == nil {
+		t.Errorf("Expected error for no input, got none")
 	}
 }
